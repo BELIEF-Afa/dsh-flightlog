@@ -4,6 +4,7 @@
 模型可以直接分析 ArduPilot / PX4 日志，得到事故结论、可复核的证据链、调参体检，并落地成
 Markdown / HTML / Word 报告与图表。
 
+[![ci](https://github.com/BELIEF-Afa/dsh-flightlog/actions/workflows/ci.yml/badge.svg)](https://github.com/BELIEF-Afa/dsh-flightlog/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-1d4ed8.svg)](LICENSE)
 [![release](https://img.shields.io/github/v/release/BELIEF-Afa/dsh-flightlog?color=1d4ed8)](https://github.com/BELIEF-Afa/dsh-flightlog/releases)
 [![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.2.0-0f172a.svg)](https://github.com/BELIEF-Afa/dsh-flightlog)
