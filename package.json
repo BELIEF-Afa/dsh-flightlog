@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-flightlog",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "飞控日志分析（flightlog-autopsy）：事故结论、证据链、调参体检与报告导出",
   "type": "module",
   "main": "./index.js",

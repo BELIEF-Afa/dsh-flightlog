@@ -8,7 +8,7 @@
 | 部分 | 说明 |
 | --- | --- |
 | 插件本体（Node 侧） | `index.js`、`bridge/fla_bridge.py`、`cordis.patch.yml`、locale、图标 —— 本项目原创，MIT |
-| 分析引擎 `fla` | 同一作者的 [flightlog-autopsy](https://pypi.org/project/flightlog-autopsy/)，MIT；本插件**只调用其公开 API，未修改源码**，以 wheel 形式随包分发（`wheels/flightlog_autopsy-0.1.0-py3-none-any.whl`，内含该项目的 LICENSE） |
+| 分析引擎 `fla` | 同一作者的 [flightlog-autopsy](https://pypi.org/project/flightlog-autopsy/)，MIT；本插件**只调用其公开 API，未修改源码**，以 wheel 形式随包分发（`wheels/flightlog_autopsy-0.2.0-py3-none-any.whl`，内含该项目的 LICENSE） |
 
 **没有「改别人的工具」这一步**：`fla` 是本项目自己写的，插件没有 fork、没有 patch、没有复制第三方源码。
 
@@ -21,7 +21,7 @@
 | `pymavlink` | 解析 ArduPilot `.bin` / `.log` / `.tlog` | **LGPL-3.0** |
 | `pyulog` | 解析 PX4 `.ulg` | BSD-3-Clause |
 | `numpy` | 数值计算 | BSD-3-Clause（并含 0BSD / MIT / Zlib / CC0-1.0 片段） |
-| `matplotlib` | 报告配图（四联图 / 调参图） | Matplotlib License（PSF 风格） |
+| `matplotlib` | 报告配图（四联图 / 调参图 / 航迹地图） | Matplotlib License（PSF 风格） |
 
 许可说明：
 - 上面四个库都**未被修改**，以独立的 Python 包形式安装（动态加载，非静态链接），符合各自许可对再分发的常见要求。
@@ -46,6 +46,8 @@ ArduPilot、PX4、Betaflight、PlotJuggler、Flight Review、DeepSeek Harness �
 | 解析 / 检测 / 出报告 | 否 | 纯本地 |
 | 首次自动装依赖 | **是**（仅一次） | 访问 PyPI；可用自带 wheel + `FLA_NO_BOOTSTRAP=1` 走离线 |
 | 大模型叙事（`fla --llm`） | 否（未开放） | 本插件未暴露 `--llm`，报告不含任何模型调用 |
+| 航迹底图瓦片 | **是**（画图时） | 按 `z/x/y` 向地图服务取栅格瓦片：默认高德（`wprd0x.is.autonavi.com`），或 `osm`（`tile.openstreetmap.org`）；`--map off` 完全离线。瓦片缓存在 `~/.cache/fla-tiles`。 |
+| 底图版权 | — | 高德瓦片 © AutoNavi，OSM 瓦片 © OpenStreetMap contributors（ODbL）。图上已带署名；高德栅格接口非公开 API，对外商业分发请改用官方 API 或 `osm` / 自建瓦片。 |
 
 ## 6. 二次分发
 

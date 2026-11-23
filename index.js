@@ -107,7 +107,7 @@ const MANAGED_DIR = path.resolve(
 );
 const MANAGED_VENV = path.join(MANAGED_DIR, 'venv');
 const WHEELS_DIR = path.join(PLUGIN_DIR, 'wheels');
-const PINNED_SPEC = process.env.FLA_SPEC || 'flightlog-autopsy[figures]==0.1.0';
+const PINNED_SPEC = process.env.FLA_SPEC || 'flightlog-autopsy[figures]==0.2.0';
 
 /** venv 里解释器的位置（Windows 是 Scripts\python.exe）。 */
 function venvPython(dir) {
@@ -470,6 +470,22 @@ function renderAnalyze(value) {
     if (sugg.length) lines.push(`  建议：${sugg.join('；')}`);
   }
 
+  const track = value.track;
+  if (track && track.max_range_m != null) {
+    const home = track.home ? `${track.home.lat.toFixed(5)}, ${track.home.lng.toFixed(5)}` : '—';
+    const peak = track.max_range_at
+      ? ` @${fmtClock(track.max_range_at.t)}（${track.max_range_at.lat.toFixed(5)}, ${track.max_range_at.lng.toFixed(5)}）`
+      : '';
+    lines.push(
+      '',
+      `航迹：起点 ${home} · 最远 ${track.max_range_m} m${peak} · 航迹长 ${track.path_m} m` +
+        ` · 终点偏移 ${track.final_offset_m} m` +
+        (Array.isArray(track.alt_range_m)
+          ? ` · 高度 ${track.alt_range_m[0]}~${track.alt_range_m[1]} m`
+          : ''),
+    );
+  }
+
   const skipped = Array.isArray(value.skipped) ? value.skipped : [];
   if (skipped.length) {
     lines.push('', `未覆盖：${skipped.slice(0, 4).map((s) => `${s.detector}（${s.reason}）`).join('；')}`);
@@ -586,7 +602,12 @@ const analyzeTool = defineTool({
         enum: ['md', 'html', 'docx', 'all'],
         description: '报告格式，默认 md。html 适合浏览器打开/打印 PDF；docx 由 fla 自带 OOXML 导出器生成，不依赖 python-docx。',
       },
-      figures: { type: 'boolean', description: '是否生成图表（四联图 + 调参图），默认 true。' },
+      figures: { type: 'boolean', description: '是否生成图表（四联图 + 航迹图 + 调参图），默认 true。' },
+      map: {
+        type: 'string',
+        enum: ['amap', 'osm', 'off'],
+        description: '航迹底图：amap 高德（默认，中国大陆最稳）/ osm / off（本地网格，离线用）。',
+      },
       outdir: { type: 'string', description: '报告输出目录，默认是日志同级的 fla-reports/。' },
     },
     required: ['log'],
@@ -607,6 +628,7 @@ const analyzeTool = defineTool({
     const argv = [file, '--format', format];
     if (outdir) argv.push('--outdir', outdir);
     if (args.figures === false) argv.push('--no-figures');
+    if (args.map) argv.push('--map', args.map);
     const result = await runBridge('analyze', argv, { signal: exec && exec.signal });
     if (!result.ok) {
       throw new Error(`${result.error || '分析失败'}\n${clip(result.trace || '', 1500)}`);
