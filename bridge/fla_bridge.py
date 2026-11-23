@@ -6,7 +6,7 @@
 只要求机器上有一个装好 fla 依赖的解释器（默认自动探测工作区的 .venv）。
 
 子命令：
-  analyze <log> [--format md|html|docx|all] [--outdir DIR] [--no-figures]
+  analyze <log> [--format md|html|docx|all] [--outdir DIR] [--no-figures] [--map amap|osm|off]
   tune    <log>
   doctor
 """
@@ -109,6 +109,37 @@ def compact_tune(tune: dict | None) -> dict | None:
 # --------------------------------------------------------------------------
 # 子命令
 # --------------------------------------------------------------------------
+def compact_track(log) -> dict | None:
+    """航迹摘要：起点/终点/最远点。没有定位数据就返回 None。"""
+    try:
+        from fla.track import track_facts
+
+        facts = track_facts(log)
+    except Exception:
+        return None
+    if not facts:
+        return None
+    home_lat, home_lng, home_t = facts["home"]
+    end_lat, end_lng, end_t = facts["end"]
+    peak_lat, peak_lng, peak_t = facts["max_range_at"]
+
+    def ll(lat, lng):
+        return {"lat": round(lat, 6), "lng": round(lng, 6)}
+
+    return {
+        "home": ll(home_lat, home_lng),
+        "end": ll(end_lat, end_lng),
+        "max_range_m": round(facts["max_range_m"], 1),
+        "max_range_at": {**ll(peak_lat, peak_lng), "t": round(peak_t, 1)},
+        "path_m": round(facts["path_m"], 1),
+        "final_offset_m": round(facts["final_offset_m"], 1),
+        "alt_range_m": ([round(facts["alt_min"], 1), round(facts["alt_max"], 1)]
+                        if "alt_max" in facts else None),
+        "max_speed_ms": round(facts["max_speed_ms"], 1) if "max_speed_ms" in facts else None,
+    }
+
+
+
 def do_analyze(opts) -> dict:
     from fla.analyzer import analyze
     from fla.figures import build_figures, explain
@@ -127,7 +158,8 @@ def do_analyze(opts) -> dict:
     figures, notes, warnings = [], [], []
     if not opts.no_figures:
         try:
-            figures = build_figures(analysis, outdir, prefix=base.name + "_fig")
+            figures = build_figures(analysis, outdir, prefix=base.name + "_fig",
+                                    map_provider=getattr(opts, "map", "amap"))
             notes = explain(analysis)
         except Exception as exc:  # 画图失败不阻塞报告
             warnings.append(f"图表生成失败：{type(exc).__name__}: {exc}")
@@ -195,6 +227,7 @@ def do_analyze(opts) -> dict:
         "reports": reports,
         "figures": [str(f.path) for f in figures],
         "tune": compact_tune(analysis.tune),
+        "track": compact_track(analysis.log),
         "elapsed_ms": int((time.time() - t0) * 1000),
     }
 
@@ -245,6 +278,7 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--format", default="md", choices=("md", "html", "docx", "all"))
     a.add_argument("--outdir", default=None)
     a.add_argument("--no-figures", action="store_true")
+    a.add_argument("--map", default="amap", choices=("amap", "osm", "off"))
 
     t = sub.add_parser("tune")
     t.add_argument("log")
