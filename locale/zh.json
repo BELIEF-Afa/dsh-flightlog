@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "飞控日志分析",
+    "description": "分析 ArduPilot / PX4 飞控日志：事故结论与证据链、调参体检，并生成 Markdown/HTML/Word 报告与图表。"
+  }
+}

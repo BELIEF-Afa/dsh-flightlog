@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Flight Log Autopsy",
+    "description": "Analyze ArduPilot / PX4 flight logs for accident evidence and tuning health, and export Markdown/HTML/Word reports with figures."
+  }
+}
