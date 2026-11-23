@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: node 语法
+        run: node --check index.js
+
+      - name: JSON 合法
+        run: |
+          for f in package.json locale/zh.json locale/en.json; do
+            node -e "JSON.parse(require('fs').readFileSync('$f','utf8')); console.log('ok $f')"
+          done
+
+      - name: 清单字段齐全
+        run: |
+          node -e "
+          const p = require('./package.json');
+          const need = ['name','version','main','exports','files'];
+          for (const k of need) if (!p[k]) { console.error('missing', k); process.exit(1); }
+          if (!p.dsh?.bundle?.patch) { console.error('missing dsh.bundle.patch'); process.exit(1); }
+          for (const f of ['index.js','bridge/fla_bridge.py','cordis.patch.yml','icon.svg']) {
+            if (!p.files.includes(f)) { console.error('files 里缺 ' + f); process.exit(1); }
+          }
+          console.log('package.json ok', p.name, p.version);
+          "
+
+      - name: wheel 存在
+        run: |
+          ls -l wheels/*.whl
+          test -n "$(ls wheels/*.whl 2>/dev/null)" || (echo "没有 wheel" && exit 1)
+
+      - name: bridge 能编译
+        run: python3 -m py_compile bridge/fla_bridge.py
+
+      - name: patch 能被 YAML 解析
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 -c "
+          import yaml,sys
+          d=yaml.safe_load(open('cordis.patch.yml'))
+          assert isinstance(d,list) and d and 'insert' in d[0], d
+          print('cordis.patch.yml ok')
+          "
