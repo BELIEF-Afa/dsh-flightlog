@@ -1,0 +1,42 @@
+{
+  "name": "@local/dsh-flightlog",
+  "version": "0.1.0",
+  "description": "飞控日志分析（flightlog-autopsy）：事故结论、证据链、调参体检与报告导出",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "bridge/fla_bridge.py",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "wheels/*.whl",
+    "LICENSE",
+    "NOTICE.md"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "flightlog",
+    "ardupilot",
+    "px4",
+    "uav"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22",
+    "dsh": ">=0.2.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
